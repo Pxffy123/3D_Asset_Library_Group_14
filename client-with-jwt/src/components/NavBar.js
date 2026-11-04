@@ -1,5 +1,5 @@
+
 import React from "react";
-import { Link } from "react-router-dom";
 import styled from "styled-components";
 import { Button } from "../styles";
 
@@ -11,46 +11,28 @@ function NavBar({ setUser }) {
 
   return (
     <Wrapper>
-      <Logo>
-        <Link to="/">My App</Link>
-      </Logo>
-      <Nav>
-        <Button>
-          Do Something
-        </Button>
-        <Button variant="outline" onClick={handleLogoutClick}>
-          Logout
-        </Button>
-      </Nav>
+      <Logo>3D ASSET LIBRARY</Logo>
+      <Button variant="outline" onClick={handleLogoutClick}>
+        Logout
+      </Button>
     </Wrapper>
   );
 }
 
 const Wrapper = styled.header`
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
-  padding: 8px;
+  padding: 15px 6%;
+  background: #10121b;
+  border-bottom: 1px solid #303447;
 `;
 
 const Logo = styled.h1`
-  font-family: "Permanent Marker", cursive;
-  font-size: 3rem;
-  color: deeppink;
+  font-size: 1.1rem;
+  letter-spacing: 2px;
+  color: #a99cff;
   margin: 0;
-  line-height: 1;
-
-  a {
-    color: inherit;
-    text-decoration: none;
-  }
-`;
-
-const Nav = styled.nav`
-  display: flex;
-  gap: 4px;
-  position: absolute;
-  right: 8px;
 `;
 
 export default NavBar;
