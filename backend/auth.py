@@ -45,3 +45,24 @@ def signup():
         "token": token,
         "user": {"id": user.id, "username": user.username}
     }), 201
+@auth_bp.route("/login", methods=["POST"])
+def login():
+    data = request.get_json(silent=True) or {}
+
+    username = data.get("username")
+    password = data.get("password")
+
+    if not isinstance(username, str) or not isinstance(password, str):
+        return jsonify({"errors": ["Username and password are required"]}), 400
+
+    user = User.query.filter_by(username=username.strip()).first()
+
+    if not user or not bcrypt.check_password_hash(user.password_hash, password):
+        return jsonify({"errors": ["Invalid username or password"]}), 401
+
+    token = create_access_token(identity=str(user.id))
+
+    return jsonify({
+        "token": token,
+        "user": {"id": user.id, "username": user.username}
+    }), 200
