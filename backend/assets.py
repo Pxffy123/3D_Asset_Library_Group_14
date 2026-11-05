@@ -16,3 +16,29 @@ def asset_to_dict(asset):
         "format": asset.format,
         "user_id": asset.user_id
     }
+@assets_bp.route("/assets", methods=["GET"])
+@jwt_required()
+def get_assets():
+    user_id = int(get_jwt_identity())
+
+    page = request.args.get("page", 1, type=int)
+    per_page = request.args.get("per_page", 10, type=int)
+
+    if page < 1 or per_page < 1 or per_page > 100:
+        return jsonify({"error": "Invalid pagination values"}), 400
+
+    pagination = Asset.query.filter_by(
+        user_id=user_id
+    ).order_by(Asset.id.desc()).paginate(
+        page=page,
+        per_page=per_page,
+        error_out=False
+    )
+
+    return jsonify({
+        "items": [asset_to_dict(asset) for asset in pagination.items],
+        "total": pagination.total,
+        "pages": pagination.pages,
+        "page": pagination.page,
+        "per_page": pagination.per_page
+    }), 200
