@@ -8,7 +8,7 @@ from flask_jwt_extended import (
 from extensions import db, bcrypt
 from models import User
 
-auth_bp = Blueprint("auth", _name_)
+auth_bp = Blueprint("auth", __name__)
 
 @auth_bp.route("/signup", methods=["POST"])
 def signup():
