@@ -99,3 +99,20 @@ def update_asset(asset_id):
     db.session.commit()
 
     return jsonify(asset_to_dict(asset)), 200
+@assets_bp.route("/assets/<int:asset_id>", methods=["DELETE"])
+@jwt_required()
+def delete_asset(asset_id):
+    user_id = int(get_jwt_identity())
+
+    asset = Asset.query.filter_by(
+        id=asset_id,
+        user_id=user_id
+    ).first()
+
+    if asset is None:
+        return jsonify({"error": "Asset not found"}), 404
+
+    db.session.delete(asset)
+    db.session.commit()
+
+    return "", 204
