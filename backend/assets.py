@@ -42,3 +42,29 @@ def get_assets():
         "page": pagination.page,
         "per_page": pagination.per_page
     }), 200
+@assets_bp.route("/assets", methods=["POST"])
+@jwt_required()
+def create_asset():
+    user_id = int(get_jwt_identity())
+    data = request.get_json(silent=True) or {}
+
+    required_fields = ["name", "description", "category", "format"]
+
+    for field in required_fields:
+        if not isinstance(data.get(field), str) or not data[field].strip():
+            return jsonify({
+                "error": f"{field} is required and must be text"
+            }), 400
+
+    asset = Asset(
+        name=data["name"].strip(),
+        description=data["description"].strip(),
+        category=data["category"].strip(),
+        format=data["format"].strip(),
+        user_id=user_id
+    )
+
+    db.session.add(asset)
+    db.session.commit()
+
+    return jsonify(asset_to_dict(asset)), 201
