@@ -76,6 +76,7 @@ with app.app_context():
             }
         ]
     }
+    
 
     for username, assets in sample_assets.items():
         user = users[username]
