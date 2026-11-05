@@ -68,3 +68,34 @@ def create_asset():
     db.session.commit()
 
     return jsonify(asset_to_dict(asset)), 201
+@assets_bp.route("/assets/<int:asset_id>", methods=["PATCH"])
+@jwt_required()
+def update_asset(asset_id):
+    user_id = int(get_jwt_identity())
+
+    asset = Asset.query.filter_by(
+        id=asset_id,
+        user_id=user_id
+    ).first()
+
+    if asset is None:
+        return jsonify({"error": "Asset not found"}), 404
+
+    data = request.get_json(silent=True) or {}
+
+    allowed_fields = ["name", "description", "category", "format"]
+
+    if not data or any(field not in allowed_fields for field in data):
+        return jsonify({"error": "Invalid or missing update fields"}), 400
+
+    for field, value in data.items():
+        if not isinstance(value, str) or not value.strip():
+            return jsonify({
+                "error": f"{field} must be non-empty text"
+            }), 400
+
+        setattr(asset, field, value.strip())
+
+    db.session.commit()
+
+    return jsonify(asset_to_dict(asset)), 200
