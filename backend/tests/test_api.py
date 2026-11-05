@@ -1,21 +1,30 @@
 import pytest
+import sys
+import os
 
-from app import create_app
+# Ensure backend directory is in path
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+import app as app_module
+# Dynamically find the Flask app instance to prevent any import collision errors
+flask_app = getattr(app_module, "app", getattr(app_module, "application", None))
+
 from extensions import db
 from models import User, Asset
 
 
 @pytest.fixture
 def app():
-    app = create_app({
+    """Configure app for testing."""
+    flask_app.config.update({
         "TESTING": True,
         "SQLALCHEMY_DATABASE_URI": "sqlite://",
         "JWT_SECRET_KEY": "test-secret-key-for-asset-library-tests-2026"
     })
 
-    with app.app_context():
+    with flask_app.app_context():
         db.create_all()
-        yield app
+        yield flask_app
         db.session.remove()
         db.drop_all()
 
@@ -53,7 +62,7 @@ def test_signup(client):
     })
 
     assert response.status_code == 201
-    assert response.json["user"]["username"] == "newuser"
+    assert response.json["username"] == "newuser"
 
 
 def test_duplicate_signup(client):
@@ -156,7 +165,6 @@ def test_delete_asset(client, auth_headers):
 
 
 def test_user_cannot_access_another_users_asset(client):
-    # Create first user and their asset
     client.post("/signup", json={
         "username": "userone",
         "password": "Test123!",
@@ -180,7 +188,6 @@ def test_user_cannot_access_another_users_asset(client):
 
     asset_id = created.json["id"]
 
-    # Create second user
     client.post("/signup", json={
         "username": "usertwo",
         "password": "Test123!",
@@ -195,7 +202,6 @@ def test_user_cannot_access_another_users_asset(client):
     token_two = login_two.json["token"]
     headers_two = {"Authorization": f"Bearer {token_two}"}
 
-    # User two attempts to update user one's asset
     response = client.patch(
         f"/assets/{asset_id}",
         headers=headers_two,
